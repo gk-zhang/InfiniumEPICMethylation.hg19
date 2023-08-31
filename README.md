@@ -1,2 +1,2 @@
-# InfiniumEpicMethylation.hg19
+# InfiniumEPICMethylation.hg19
 Annotation package for Illumina Infinium EPIC DNA methylation probes
