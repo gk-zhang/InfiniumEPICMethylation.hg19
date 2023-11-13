@@ -52,3 +52,27 @@ mcols(rnb.anno.epic.all.new) <- data.frame(mcols(rnb.anno.epic.all.new),
                                            )
 
 mcols(rnb.anno.epic.all.new)$entrezid <- allgenes[transcripts[names(v.distTxStart)]$gene_id]$entrezid
+
+### using the findOverlaps methods to find the overlapped genes (only "protein coding genes")
+overlaps_genes_cpgs <- findOverlaps(rnb.anno.epic.all, allgenes.protein, ignore.strand=TRUE)
+df.overlaps_genes_cpgs <- as.data.frame(overlaps_genes_cpgs)
+df.overlaps_genes_cpgs$gene_id <- names(allgenes.protein[df.overlaps_genes_cpgs$subjectHits])
+df.overlaps_genes_cpgs$gene <- allgenes.protein[df.overlaps_genes_cpgs$subjectHits]$gene_name
+
+df.overlaps_genes_cpgs <- df.overlaps_genes_cpgs[!duplicated(df.overlaps_genes_cpgs[c("queryHits", "gene")]), ]
+
+df.overlaps_genes_cpgs.agg <- aggregate(gene_id ~ queryHits, df.overlaps_genes_cpgs, paste, collapse = ";")
+df.overlaps_genes_cpgs.agg.gene <- aggregate(gene ~ queryHits, df.overlaps_genes_cpgs, paste, collapse = ";")
+
+
+v.ifTxIN <- rep(NA, length(rnb.anno.epic.all))
+v.ifTxIN[df.overlaps_genes_cpgs.agg$queryHits] <- df.overlaps_genes_cpgs.agg$gene_id
+
+v.ifTxIN.gene <- rep(NA, length(rnb.anno.epic.all))
+v.ifTxIN.gene[df.overlaps_genes_cpgs.agg.gene$queryHits] <- df.overlaps_genes_cpgs.agg.gene$gene
+
+mcols(rnb.anno.epic.all.new)$gene_id_in <- v.ifTxIN
+mcols(rnb.anno.epic.all.new)$gene_in <- v.ifTxIN.gene
+
+### the final annotation is stored in a data frame
+df.rnb.anno.epic.all <- as.data.frame(rnb.anno.epic.all.new)
